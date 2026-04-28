@@ -47,9 +47,10 @@
     <section id="events" class="py-24 px-6 md:px-20 min-h-screen flex items-center justify-center">
         <div class="max-w-6xl mx-auto text-center">
             <h2 class="text-4xl font-bold mb-14">Upcoming Events</h2>
-            <div class="text-gray-600 text-xl">
-                No events yet. Please check back later.
-            </div>
+            <div id="events-container" class="grid md:grid-cols-3 gap-6"></div>
+<div id="events-empty" class="text-gray-600 text-xl hidden">
+    No events yet. Please check back later.
+</div>
         </div>
     </section>
 
@@ -66,10 +67,11 @@
                 </p>
             </div>
 
-            <div>
+             <div>
                 <h4 class="font-bold mb-4">Contact</h4>
-                <p>Email: info@wadada.org</p>
-                <p>Phone: +234 xxx xxx xxxx</p>
+                <p id="footer-email">Email: info@wadada.org</p>
+                <p id="footer-phone">Phone: +234 xxx xxx xxxx</p>
+                <p id="footer-address">Address: Nassarawa state</p>
             </div>
 
             <div>
@@ -86,5 +88,163 @@
         </div>
     </footer>
 
+    <!-- REGISTER MODAL -->
+<div id="register-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-md rounded-xl p-6 relative">
+
+        <button id="close-modal" class="absolute top-3 right-3 text-gray-500 text-xl">
+            ×
+        </button>
+
+        <h2 class="text-2xl font-bold mb-4">Register for Event</h2>
+
+        <input id="worker-email" type="email"
+            placeholder="Enter your email"
+            class="w-full border p-3 rounded-lg mb-4">
+
+        <button id="submit-register"
+            class="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800">
+            Submit Registration
+        </button>
+
+    </div>
+
+</div>
+
 </body>
+
+<script src="js/settings.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const container = document.getElementById('events-container');
+    const emptyState = document.getElementById('events-empty');
+
+    container.innerHTML = `<p class="text-gray-500 col-span-3">Loading events...</p>`;
+
+    try {
+        const res = await fetch('http://localhost:5000/api/v1/users/events');
+
+        if (!res.ok) {
+            throw new Error('Failed to fetch events');
+        }
+
+        const events = await res.json();
+
+        container.innerHTML = '';
+
+        if (!events || events.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        events.forEach(event => {
+            const date = new Date(event.date).toLocaleDateString();
+
+            const card = document.createElement('div');
+            card.className = "bg-white rounded-xl shadow overflow-hidden";
+
+            card.innerHTML = `
+                <img src="${event.image_url}" class="h-48 w-full object-cover">
+
+                <div class="p-5 text-left">
+                    <h3 class="font-bold text-lg">${event.name}</h3>
+
+                    <p class="text-sm text-gray-500 mt-2">
+                        📅 ${date}
+                    </p>
+
+                    <p class="text-sm text-gray-500">
+                        📍 ${event.location}
+                    </p>
+
+                    <p class="text-gray-600 text-sm mt-3">
+                        ${event.description?.substring(0, 100) || ""}...
+                    </p>
+
+                   <button 
+                    class="register-btn inline-block mt-4 bg-black text-white px-4 py-2 rounded-lg text-sm"
+                    data-id="${event.id}">
+                    Register
+                </button>
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `
+            <p class="text-red-500 col-span-3">
+                Failed to load events. Please try again later.
+            </p>
+        `;
+    }
+});
+
+
+const modal = document.getElementById("register-modal");
+const closeModal = document.getElementById("close-modal");
+const emailInput = document.getElementById("worker-email");
+const submitBtn = document.getElementById("submit-register");
+
+let selectedEventId = null;
+
+// OPEN MODAL
+document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("register-btn")) {
+        selectedEventId = e.target.getAttribute("data-id");
+        modal.classList.remove("hidden");
+    }
+});
+
+// CLOSE MODAL
+closeModal.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    emailInput.value = "";
+});
+
+// SUBMIT REGISTRATION
+submitBtn.addEventListener("click", async () => {
+
+    const workerEmail = emailInput.value.trim();
+
+    if (!workerEmail) {
+        return alert("Email is required");
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Registering...";
+
+    try {
+        const res = await fetch(
+            `http://localhost:5000/api/v1/users/events/${selectedEventId}/register`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ workerEmail })
+            }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message);
+
+        alert("Successfully registered 🎉");
+
+        modal.classList.add("hidden");
+        emailInput.value = "";
+
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Submit Registration";
+    }
+});
+</script>
 </html>

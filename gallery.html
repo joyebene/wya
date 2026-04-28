@@ -46,27 +46,8 @@
     <section id="gallery" class="py-24 px-6 md:px-20">
         <div class="max-w-6xl mx-auto text-center">
             <h2 class="text-4xl font-bold mb-14 text-black">Gallery</h2>
-            <p class="text-gray-600 mb-10">More images will be added soon.</p>
             <div class="grid md:grid-cols-3 gap-8 gallery-img">
-                <!-- Image placeholders -->
-                <div class="bg-gray-200 h-60 rounded-lg relative overflow-hidden">
-                    <img src="img/img3 (1).jpeg" alt="img" class="rounded-md w-full h-full object-cover">
-                </div>
-                <div class="bg-gray-200 h-64 rounded-lg">
-                    <img src="img/img3 (2).jpeg" alt="img" class="rounded-md w-full h-full object-cover">
-                </div>
-                <div class="bg-gray-200 h-64 rounded-lg">
-                    <img src="img/img3 (3).jpeg" alt="img" class="rounded-md w-full h-full object-cover">
-                </div>
-                <div class="bg-gray-200 h-64 rounded-lg">
-                    <img src="img/img3 (4).jpeg" alt="img" class="rounded-md w-full h-full object-cover">
-                </div>
-                <div class="bg-gray-200 h-64 rounded-lg">
-                    <img src="img/img1 (2).jpeg" alt="img" class="rounded-md w-full h-full object-cover">
-                </div>
-                <div class="bg-gray-200 h-64 rounded-lg relative">
-                    <img src="img/img2 (1).jpeg" alt="img" class="rounded-md w-full h-full object-cover">
-                </div>
+                <!-- Images will be loaded here dynamically -->
             </div>
         </div>
     </section>
@@ -84,10 +65,11 @@
                 </p>
             </div>
 
-            <div>
+              <div>
                 <h4 class="font-bold mb-4">Contact</h4>
-                <p>Email: info@wadada.org</p>
-                <p>Phone: +234 xxx xxx xxxx</p>
+                <p id="footer-email">Email: info@wadada.org</p>
+                <p id="footer-phone">Phone: +234 xxx xxx xxxx</p>
+                <p id="footer-address">Address: Nassarawa state</p>
             </div>
 
             <div>
@@ -103,6 +85,60 @@
             © 2026 Wadada Youth Ambassadors. All Rights Reserved.
         </div>
     </footer>
+
+    <script src="js/settings.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const galleryContainer = document.querySelector('.gallery-img');
+            galleryContainer.innerHTML = '<p class="text-gray-600 col-span-3 text-center">Loading gallery...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/v1/users/gallery');
+
+                console.log(response);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch gallery');
+                }
+                const images = await response.json();
+
+                galleryContainer.innerHTML = ''; // Clear loading message
+
+                if (images && images.length > 0) {
+                    images.forEach(img => {
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.className = 'bg-gray-200 h-64 rounded-lg relative overflow-hidden';
+                        imgWrapper.innerHTML = `
+    <div class="relative h-64 w-full overflow-hidden rounded-lg group">
+        <img 
+            src="${img.image_url}" 
+            alt="${img.title}" 
+            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+        />
+
+        <!-- overlay -->
+        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col justify-end p-4">
+            <h3 class="text-white font-bold text-lg">
+                ${img.title || "Untitled"}
+            </h3>
+            <p class="text-yellow-300 text-sm">
+                ${img.category || "General"}
+            </p>
+        </div>
+    </div>
+`;
+                        galleryContainer.appendChild(imgWrapper);
+                    });
+                } else {
+                    galleryContainer.innerHTML = '<p class="text-gray-600 col-span-3 text-center">The gallery is currently empty. Please check back later.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading gallery:', error);
+                galleryContainer.innerHTML = '<p class="text-red-500 col-span-3 text-center">Could not load the gallery at this time. Please try again later.</p>';
+            }
+        });
+    </script>
 
 </body>
 
