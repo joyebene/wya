@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     container.innerHTML = `<p class="text-gray-500 col-span-3">Loading events...</p>`;
 
     try {
-        const res = await fetch('http://localhost:5000/api/v1/users/events');
+        const res = await fetch('https://wya-backend-vv7q.onrender.com/api/v1/users/events');
 
         if (!res.ok) {
             throw new Error('Failed to fetch events');
@@ -220,7 +220,7 @@ submitBtn.addEventListener("click", async () => {
 
     try {
         const res = await fetch(
-            `http://localhost:5000/api/v1/users/events/${selectedEventId}/register`,
+            `https://wya-backend-vv7q.onrender.com/api/v1/users/events/${selectedEventId}/register`,
             {
                 method: "POST",
                 headers: {

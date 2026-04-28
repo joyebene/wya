@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const res = await fetch('http://localhost:5000/api/v1/users/settings');
+        const res = await fetch('https://wya-backend-vv7q.onrender.com/api/v1/users/settings');
 
         if (!res.ok) throw new Error("Failed to load settings");
 

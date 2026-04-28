@@ -81,7 +81,7 @@ joinForm.addEventListener('submit', async (e) => {
     };
 
     try {
-        const response = await fetch('http://localhost:5000/api/v1/users/register', {
+        const response = await fetch('https://wya-backend-vv7q.onrender.com/api/v1/users/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!container) return;
 
     try {
-        const res = await fetch('http://localhost:5000/api/v1/users/events');
+        const res = await fetch('https://wya-backend-vv7q.onrender.com/api/v1/users/events');
 
         if (!res.ok) throw new Error('Failed to fetch events');
 
