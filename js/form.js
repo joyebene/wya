@@ -96,9 +96,32 @@ joinForm.addEventListener('submit', async (e) => {
             throw new Error(result.message || 'An unknown error occurred.');
         }
 
-        formMessage.textContent = 'Registration successful! Welcome to the movement.';
+        // The backend sends back the worker object, which includes the worker_id
+        const workerId = result.worker.worker_id;
+
+        // Create a more interactive success message
+        formMessage.innerHTML = `
+            Registration successful! Your Member ID is <strong>${workerId}</strong>.
+            <button id="copy-id-btn" class="ml-2 bg-gray-700 text-white px-3 py-1 rounded-md text-sm hover:bg-gray-600">Copy ID</button>
+        `;
         formMessage.className = 'p-3 rounded-lg mb-4 text-center bg-green-500 text-white';
         joinForm.reset();
+
+        // Add event listener for the new copy button
+        const copyBtn = document.getElementById('copy-id-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(workerId).then(() => {
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy ID';
+                    }, 2000); // Reset text after 2 seconds
+                }).catch(err => {
+                    console.error('Failed to copy ID: ', err);
+                    alert('Failed to copy ID. Please copy it manually.');
+                });
+            });
+        }
 
     } catch (error) {
         formMessage.textContent = `Error: ${error.message}`;
